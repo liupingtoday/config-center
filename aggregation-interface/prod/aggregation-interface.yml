@@ -1,0 +1,214 @@
+logging:
+    level:
+        ROOT: INFO
+        com.wondertek.cmam: INFO
+        io.github.jhipster: INFO
+
+configserver:
+    name: Docker JHipster Registry
+    status: Connected to the JHipster Registry running in Docker
+
+eureka:
+    client:
+        enabled: true
+        healthcheck:
+            enabled: true
+        fetch-registry: true
+        register-with-eureka: true
+        instance-info-replication-interval-seconds: 10
+        registry-fetch-interval-seconds: 10
+        service-url:
+            defaultZone: http://admin:${jhipster.registry.password}@aggregation-registry:8661/eureka/
+    instance:
+        appname: ${spring.application.name}
+        instanceId: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+        status-page-url-path: ${management.context-path}/info
+        health-check-url-path: ${management.context-path}/health
+        metadata-map:
+            zone: primary # This is needed for the load balancer
+            profile: ${spring.profiles.active}
+            version: ${info.project.version}
+        prefer-ip-address: true
+spring:
+    profiles:
+        active: prod
+        include: swagger
+    application:
+        name: aggregation-interface
+    devtools:
+        restart:
+            enabled: false
+        livereload:
+            enabled: false
+    jackson:
+        serialization.write_dates_as_timestamps: false
+    messages:
+        cache-seconds: 1
+        basename: i18n/messages
+    mvc:
+        favicon:
+            enabled: false
+    cloud:
+        stream:
+            kafka:
+                binder:
+                    brokers: 192.168.1.3
+                    zk-nodes: 192.168.1.3
+                    #minPartitionCount: 1
+                    #autoCreateTopics: true
+                    #autoAddPartitions: true
+            bindings:
+                #视讯汇聚的一个topic
+                video_output:
+                    destination: video_aggregation
+                #音乐汇聚一个topic
+                music_output:
+                    destination: music_aggregation
+                #播控同步的一个topic
+                bc_output:
+                    destination: bc_aggregation
+                #动漫汇聚一个topic
+                animation_output:
+                    destination: animation_aggregation_prod
+                # 依次添加
+                digital_media_output:
+                    destination: digital_media_aggregation
+    mail:
+        host: localhost
+        port: 25
+        username:
+        password:
+    thymeleaf:
+        cache: true
+        mode: XHTML
+    zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
+        base-url: http://localhost:9411
+        enabled: false
+        locator:
+            discovery:
+                enabled: true
+security:
+    basic:
+        enabled: false
+# ===================================================================
+# To enable SSL, generate a certificate using:
+# keytool -genkey -alias aggregationInterface -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+#
+# You can also use Let's Encrypt:
+# https://maximilian-boehm.com/hp2121/Create-a-Java-Keystore-JKS-from-Let-s-Encrypt-Certificates.htm
+#
+# Then, modify the server.ssl properties so your "server" configuration looks like:
+#
+# server:
+#    port: 443
+#    ssl:
+#        key-store: keystore.p12
+#        key-store-password: <your-password>
+#        key-store-type: PKCS12
+#        key-alias: aggregationInterface
+# ===================================================================
+server:
+    port: 8065
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    session:
+        cookie:
+            http-only: true
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: http://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+    http:
+        version: V_1_1 # To use HTTP/2 you will need SSL support (see above the "server.ssl" configuration)
+        cache: # Used by the CachingHttpHeadersFilter
+            timeToLiveInDays: 1461
+    security:
+        authentication:
+            jwt:
+                secret: testOk
+                # Token is valid 24 hours
+                token-validity-in-seconds: 86400
+                token-validity-in-seconds-for-remember-me: 2592000
+    mail: # specific JHipster mail property, for standard properties see MailProperties
+        from: aggregationInterface@aggregation-registry
+        base-url: http://my-server-url-to-change # Modify according to your server's URL
+    swagger:
+        default-include-pattern: /api/.*
+        title: aggregationInterface API
+        description: aggregationInterface API documentation
+        version: 0.0.1
+        terms-of-service-url:
+        contact-name:
+        contact-url:
+        contact-email:
+        license:
+        license-url:
+    ribbon:
+        display-on-active-profiles: dev
+    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
+        jmx.enabled: true
+        graphite:
+            enabled: false
+            host: localhost
+            port: 2003
+            prefix: aggregationInterface
+        prometheus:
+            enabled: false
+            endpoint: /prometheusMetrics
+        logs: # Reports Dropwizard metrics in the logs
+            enabled: false
+            report-frequency: 60 # in seconds
+    logging:
+        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+            enabled: true
+            host: 192.168.1.6
+            port: 5000
+            queue-size: 512
+        spectator-metrics: # Reports Spectator Circuit Breaker metrics in the logs
+            enabled: false
+            # edit spring.metrics.export.delay-millis to set report frequency
+hystrix:
+    share-security-context: true
+feign:
+    hystrix:
+        enabled: true
+ribbon:
+    eureka:
+        enabled: true
+management:
+    security:
+        roles: ADMIN
+    context-path: /management
+    health:
+        mail:
+            enabled: false # When using the MailService, configure an SMTP server and set this to true
+        binders:
+            enabled: true
+application:
+#aggregation encrypt key
+secret:
+    encryptKey: cmam-2018
+info:
+    project:
+        version: V0.0.1
+request:
+  encryptKey: cmam-2018
+  expiration: 180000
+  dateFormat: yyyyMMddHHmmssSSS
+aggregation:
+  game:
+    service: aggregation-game-service
+environment:
+  production: false

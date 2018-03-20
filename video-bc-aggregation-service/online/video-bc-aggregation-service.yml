@@ -1,0 +1,210 @@
+logging:
+    level:
+        ROOT: DEBUG
+        com.wondertek.cmam: DEBUG
+        io.github.jhipster: DEBUG
+configserver:
+    name: Docker JHipster Registry
+    status: Connected to the JHipster Registry running in Docker
+eureka:
+    client:
+        enabled: true
+        healthcheck:
+            enabled: true
+        fetch-registry: true
+        register-with-eureka: true
+        instance-info-replication-interval-seconds: 10
+        registry-fetch-interval-seconds: 10
+        service-url:
+            defaultZone: http://admin:${jhipster.registry.password}@aggregation-registry-peer-1:8661/eureka/,http://admin:${jhipster.registry.password}@aggregation-registry-peer-2:8662/eureka/,http://admin:${jhipster.registry.password}@aggregation-registry-peer-3:8663/eureka/
+    instance:
+        appname: videoAggregationBcService
+        instanceId: videoAggregationBcService:${spring.application.instance-id:${random.value}}
+        lease-renewal-interval-in-seconds: 5
+        lease-expiration-duration-in-seconds: 10
+        status-page-url-path: ${management.context-path}/info
+        health-check-url-path: ${management.context-path}/health
+        metadata-map:
+            zone: primary # This is needed for the load balancer
+            profile: ${spring.profiles.active}
+            version: ${info.project.version}
+        prefer-ip-address: true
+ribbon:
+    eureka:
+        enabled: true
+# See https://github.com/Netflix/Hystrix/wiki/Configuration
+#hystrix:
+#    command:
+#        default:
+#            execution:
+#                isolation:
+#                    thread:
+#                        timeoutInMilliseconds: 10000
+# See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
+feign:
+    hystrix:
+        enabled: true
+
+hystrix:
+    share-security-context: true
+
+management:
+    security:
+        roles: ADMIN
+        enabled: false #是否开启actuator安全认证
+    context-path: /management
+    health:
+        mail:
+            enabled: false # When using the MailService, configure an SMTP server and set this to true
+        binders:
+            enabled: true
+
+spring:
+    application:
+        name: video-bc-aggregation-service
+    profiles:
+        active: online
+        include: swagger
+    devtools:
+        restart:
+            enabled: false
+        livereload:
+            enabled: false
+    jackson:
+        serialization.write_dates_as_timestamps: false
+        serialization.indent_output: true
+    messages:
+        basename: i18n/messages
+        cache-seconds: 1
+    mvc:
+        favicon:
+            enabled: false
+    thymeleaf:
+        mode: XHTML
+        cache: true
+    mail:
+        host: localhost
+        port: 25
+        username:
+        password:
+    zipkin: # Use the "zipkin" Maven profile to have the Spring Cloud Zipkin dependencies
+        base-url: http://localhost:9411
+        enabled: false
+        locator:
+            discovery:
+                enabled: true
+    cloud:
+        stream:
+            kafka:
+                binder:
+                    brokers: 192.168.1.3
+                    zk-nodes: 192.168.1.3
+            bindings:
+                bc_input:
+                    destination: bc_aggregation
+                output:
+                     destination: cmam_aggregation
+                     group: SEARCHENGINE
+    data:
+        mongodb:
+            host: 192.168.1.3
+            port: 27017
+            database: cmam
+            authenticationDatabase: admin
+            username: test
+            password: test
+security:
+    basic:
+        enabled: false
+
+server:
+    port: 8084
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    session:
+        cookie:
+            http-only: true
+
+info:
+    project:
+        version: #project.version#
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: http://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+    http:
+        version: V_1_1 # To use HTTP/2 you will need SSL support (see above the "server.ssl" configuration)
+        cache: # Used by the CachingHttpHeadersFilter
+            timeToLiveInDays: 1461
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+    # By default CORS is disabled. Uncomment to enable.
+    #cors:
+        #allowed-origins: "*"
+        #allowed-methods: "*"
+        #allowed-headers: "*"
+        #exposed-headers: "Authorization,Link,X-Total-Count"
+        #allow-credentials: true
+        #max-age: 1800
+    mail:
+        from: videoAggregationBcService@localhost
+        base-url: http://my-server-url-to-change
+    swagger:
+        default-include-pattern: /api/.*
+        title: videoAggregationBcService API
+        description: videoAggregationBcService API documentation
+        version: 0.0.1
+        terms-of-service-url:
+        contact-name:
+        contact-url:
+        contact-email:
+        license:
+        license-url:
+    security:
+        authentication:
+            jwt:
+                secret: b6813d84723a1cf8696b08cb554bd406ed86d62d
+                # Token is valid 24 hours
+                token-validity-in-seconds: 86400
+                token-validity-in-seconds-for-remember-me: 2592000
+    ribbon:
+        display-on-active-profiles: dev
+    metrics: # DropWizard Metrics configuration, used by MetricsConfiguration
+        jmx.enabled: true
+        graphite:
+            enabled: false
+            host: localhost
+            port: 2003
+            prefix: videoAggregationBcService
+        prometheus:
+            enabled: false
+            endpoint: /prometheusMetrics
+        logs: # Reports Dropwizard metrics in the logs
+            enabled: false
+            report-frequency: 60 # in seconds
+    logging:
+        logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+            enabled: false
+            host: localhost
+            port: 5000
+            queue-size: 512
+        spectator-metrics: # Reports Spectator Circuit Breaker metrics in the logs
+            enabled: false
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# http://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+application:
